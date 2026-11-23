@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cottontown Rehearsal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday: a rehearsal log for 60 singers, warm but practical
+   IDEA the director's marked-up running sheet: songs as tracks, every note pinned to its moment
+   PICTURE rehearsal map: each video as a bar at true length, coloured pins at every timestamp, all clickable
+   COLOUR chorus-shirt crimson band, cotton-white ground, ink; teal for technique, gold for admin
+   TYPE Archivo 800 display + Archivo text
+   LAYOUT laptop: crimson title band, map full width, then takeaways/homework/notices in three columns, then songs; phone: stacked */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#140b0d);--ink:light-dark(#1b1416,#f3ecee);--soft:light-dark(#6b5d61,#b9a9ae);--line:light-dark(#eadfe2,#3a2a2f);--panel:light-dark(#fbf6f7,#1e1215);--red:#b3122e;--redink:light-dark(#b3122e,#ff6b84);--teal:light-dark(#0b7480,#4fc7d2);--gold:light-dark(#a86f00,#f0b43c);--muted:light-dark(#d9cdd0,#4a3a3f)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:64px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Archivo,system-ui,sans-serif;overflow-x:clip}
+a{color:inherit}
+.band{padding-block:clamp(24px,3.5vw,52px);padding-inline:max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+.top{background:var(--red);color:#fff}
+.top .wrap{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px 48px;align-items:end}
+h1{font-weight:800;font-size:clamp(32px,5vw,52px);line-height:1.05;letter-spacing:-.02em;margin:0 0 12px;text-wrap:balance}
+.top p{margin:0;font-size:17px;max-width:62ch;opacity:.95}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.stat{border-top:2px solid rgba(255,255,255,.5);padding-top:8px}
+.stat b{display:block;font-size:clamp(26px,3vw,36px);font-weight:800;line-height:1.1}
+.stat span{font-size:14px;opacity:.9}
+h2{font-weight:800;font-size:clamp(24px,2.6vw,30px);line-height:1.1;letter-spacing:-.01em;margin:0 0 6px}
+.sub{color:var(--soft);margin:0 0 18px;font-size:15px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--soft);margin-bottom:14px}
+.legend i,.chip i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:0}
+.k-run{background:var(--redink)}.k-note{background:var(--ink)}.k-tech{background:var(--teal)}.k-admin{background:var(--gold)}
+.map{display:grid;gap:4px}
+.mrow{display:grid;grid-template-columns:minmax(0,15em) minmax(0,1fr);gap:14px;align-items:center;padding:3px 0}
+.mrow.first{margin-top:10px}
+.mlab{font-size:14px;line-height:1.25}
+.mlab b{font-weight:600}
+.mlab small{color:var(--soft);font-size:13px;white-space:nowrap}
+.track{position:relative;height:30px}
+.bar{position:absolute;left:0;top:9px;height:12px;border-radius:6px;background:var(--muted)}
+.bar.none{background:repeating-linear-gradient(135deg,var(--muted) 0 6px,transparent 6px 11px)}
+.bar .nt{position:absolute;left:8px;top:-5px;font-size:13px;color:var(--soft);white-space:nowrap;background:var(--bg);padding:0 6px;line-height:22px}
+.pin{position:absolute;top:3px;width:12px;height:24px;margin-left:-6px;display:block}
+.pin::after{content:"";position:absolute;left:3px;top:6px;width:6px;height:12px;border-radius:3px;background:var(--c)}
+.pin:hover::after,.pin:focus-visible::after{transform:scaleY(1.5);box-shadow:0 0 0 2px var(--bg)}
+.pin:focus-visible{outline:2px solid var(--redink);outline-offset:1px}
+.axis{display:grid;grid-template-columns:minmax(0,15em) minmax(0,1fr);gap:14px;font-size:13px;color:var(--soft)}
+.axis div{position:relative;height:18px}.axis span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;background:var(--panel);border-block:1px solid var(--line)}
+.cols section{padding:4px 0}
+.cols h2{font-size:22px;margin-bottom:10px}
+.cols ul{margin:0;padding-left:1.1em}
+.cols li{margin:0 0 9px}
+.cols li a{font-weight:600;color:var(--redink);white-space:nowrap}
+.nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);overflow-x:auto}
+.nav .wrap{display:flex;gap:6px;padding:10px max(5vw,16px);white-space:nowrap}
+.nav a{flex:none;text-decoration:none;font-size:14px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--line)}
+.nav a:hover,.nav a:focus-visible{border-color:var(--redink);color:var(--redink)}
+.song{border-bottom:1px solid var(--line)}
+.song .head{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;margin-bottom:14px}
+.vids{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.vid{font-size:14px;padding:6px 12px;border-radius:8px;background:var(--panel);border:1px solid var(--line);text-decoration:none}
+.vid b{color:var(--redink)}
+.vid.none{color:var(--soft)}
+.ev{display:grid;grid-template-columns:5.6em minmax(0,1fr);gap:4px 16px;padding:12px 0;border-top:1px solid var(--line)}
+.t{font-weight:800;font-size:17px;color:var(--redink);text-decoration:none;white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.3}
+.t small{display:block;font-weight:500;font-size:13px;color:var(--soft)}
+.t:hover{text-decoration:underline}
+.ev h3{font-size:17px;font-weight:600;margin:0 0 2px;line-height:1.3}
+.ev p{margin:0;max-width:72ch}
+.chip{font-size:13px;color:var(--soft);white-space:nowrap;margin-left:4px}
+.parts{font-size:13px;color:var(--soft)}
+.unc{font-size:14px;color:var(--soft);font-style:italic}
+.foot{color:var(--soft);font-size:14px}
+.foot p{max-width:80ch;margin:0 0 8px}
+@media(max-width:900px){.top .wrap,.cols{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.mrow,.axis{grid-template-columns:minmax(0,1fr);gap:0}.axis>span{display:none}.mlab{margin-top:6px}.mrow.first{margin-top:14px}.ev{grid-template-columns:4.6em minmax(0,1fr)}.stats{gap:8px}}
+@media(prefers-reduced-motion:no-preference){.pin::after{transition:transform .15s}}
+.shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,min(40vw,520px))}
+.player{border-left:1px solid var(--line);background:var(--panel)}
+.pbox{position:sticky;top:0;padding:16px}
+.frame{position:relative;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
+.frame iframe,.frame>div{position:absolute;inset:0;width:100%;height:100%;border:0}
+.now{margin:10px 0 0;font-size:14px;color:var(--soft);min-height:2.6em}
+.now b{color:var(--ink)}
+.playing{outline:2px solid var(--redink);outline-offset:2px;border-radius:6px}
+@media(max-width:1000px){.shell{grid-template-columns:minmax(0,1fr)}.player{order:-1;position:sticky;top:0;z-index:6;border-left:0;border-bottom:1px solid var(--line)}.pbox{position:static;padding:8px max(5vw,16px);display:grid;grid-template-columns:minmax(0,22em) minmax(0,1fr);gap:12px;align-items:center}.now{margin:0}.nav{position:static}}
+@media(max-width:600px){.pbox{grid-template-columns:minmax(0,1fr);gap:4px}.now{min-height:0;font-size:13px}}
+</style>
+</head>
+<body>
+<header class="band top"><div class="wrap">
+<div>
+<h1 id="h1"></h1>
+<p id="intro"></p>
+</div>
+<div class="stats" id="stats"></div>
+</div></header>
+
+<div class="shell"><div class="content">
+<section class="band"><div class="wrap">
+<h2>Rehearsal map</h2>
+<p class="sub">Each bar is one video at its real length. Click any pin or timestamp to play from that moment.</p>
+<div class="legend"><span><i class="k-run"></i>Sing-through</span><span><i class="k-note"></i>Note or feedback</span><span><i class="k-tech"></i>Technique</span><span><i class="k-admin"></i>Admin</span></div>
+<div class="map" id="map"></div>
+</div></section>
+
+<div class="band cols"><div class="wrap" style="display:contents">
+<section><h2>Key takeaways</h2><ul id="take"></ul></section>
+<section><h2>Before next week</h2><ul id="home"></ul></section>
+<section><h2>Notices</h2><ul id="notes"></ul></section>
+</div></div>
+
+<nav class="nav" aria-label="Songs"><div class="wrap" id="nav"></div></nav>
+<main id="songs"></main>
+</div>
+<aside class="player" aria-label="Video player"><div class="pbox"><div class="frame"><div id="yt"></div></div><p class="now" id="now">Click any timestamp or pin to play it here.</p></div></aside>
+</div>
+
+<footer class="band foot"><div class="wrap" id="foot"></div></footer>
+
+<script>
+{
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+const D=/*DATA*/null;
+const {V,S,E,take,home}=D;
+const TY={run:["Sing-through","var(--redink)"],note:["Note","var(--ink)"],tech:["Technique","var(--teal)"],admin:["Admin","var(--gold)"]};
+document.title="Cottontown Rehearsal "+new Date(D.date+"T12:00").toLocaleDateString("en-GB",{day:"numeric",month:"short"});
+document.getElementById("h1").textContent=D.heading;document.getElementById("intro").textContent=D.intro;
+document.getElementById("foot").innerHTML='<p><a href="../">← All rehearsals</a></p>'+D.foot.map(p=>"<p>"+esc(p)+"</p>").join("");
+const sec=t=>{const p=t.split(":").map(Number);return p.length==3?p[0]*3600+p[1]*60+p[2]:p[0]*60+p[1]};
+const url=(v,t)=>"https://www.youtube.com/watch?v="+V[v].id+(t?"&t="+sec(t)+"s":"");
+const max=Math.max(...Object.values(V).map(v=>sec(v.len)));
+const logged=Object.keys(V).filter(k=>!V[k].none).length;
+document.getElementById("stats").innerHTML=[[E.length,"moments logged"],[S.length-1,"songs worked"],[Object.keys(V).length,"videos ("+logged+" logged)"]].map(([b,s])=>`<div class="stat"><b>${b}</b><span>${s}</span></div>`).join("");
+let mh="",prev="";
+for(const s of S)for(const k of Object.keys(V).filter(k=>V[k].song==s.k)){const v=V[k],w=sec(v.len)/max*100;
+const pins=E.filter(e=>e[0]==k).map(e=>`<a class="pin" style="left:${Math.min(sec(e[1])/sec(v.len)*100,99)*w/100}%;--c:${TY[e[2]][1]}" href="${url(k,e[1])}" data-v="${k}" data-t="${sec(e[1])}" data-ts="${e[1]}" data-title="${esc(e[3])}" target="_blank" rel="noopener" title="${esc(e[1]+" · "+e[3])}" aria-label="${esc(s.name+", "+e[1]+": "+e[3])}"></a>`).join("");
+mh+=`<div class="mrow${prev!=s.k?" first":""}"><div class="mlab"><b>${prev!=s.k?esc(s.name):""}</b>${prev!=s.k?"<br>":""}<small>${k} · ${v.label} · ${v.len}</small></div><div class="track"><div class="bar${v.none?" none":""}" style="width:${w}%">${v.none?'<span class="nt">No captions yet</span>':""}</div>${pins}</div></div>`;prev=s.k}
+const ticks=[0,10,20,30].map(m=>`<span style="left:${m*60/max*100}%">${m} min</span>`).join("");
+mh+=`<div class="axis"><span></span><div>${ticks}</div></div>`;
+document.getElementById("map").innerHTML=mh;
+document.getElementById("take").innerHTML=take.map(t=>`<li>${esc(t)}</li>`).join("");
+document.getElementById("home").innerHTML=home.map(([t,v,ts])=>`<li>${esc(t)} <a href="${url(v,ts)}" data-v="${v}" data-t="${sec(ts)}" data-ts="${ts}" data-title="${esc(t)}" target="_blank" rel="noopener">${v} ${ts}</a></li>`).join("");
+document.getElementById("notes").innerHTML=E.filter(e=>V[e[0]]&&V[e[0]].song=="words"&&e[2]=="admin").map(e=>`<li><strong>${esc(e[3])}.</strong> ${esc(e[4])} <a href="${url(e[0],e[1])}" data-v="${e[0]}" data-t="${sec(e[1])}" data-ts="${e[1]}" data-title="${esc(e[3])}" target="_blank" rel="noopener">${e[1]}</a></li>`).join("");
+document.getElementById("nav").innerHTML=S.map(s=>`<a href="#${s.k}">${esc(s.name)}</a>`).join("");
+document.getElementById("songs").innerHTML=S.map(s=>{const ks=Object.keys(V).filter(k=>V[k].song==s.k);
+const vids=ks.map(k=>`<a class="vid${V[k].none?" none":""}" href="${url(k)}" data-v="${k}" data-t="0" data-ts="0:00" data-title="${esc(V[k].label)}" target="_blank" rel="noopener"><b>${k}</b> ${V[k].label} · ${V[k].len}${V[k].none?" · no captions":""}</a>`).join("");
+const evs=E.filter(e=>ks.includes(e[0])).map(e=>`<div class="ev"><a class="t" href="${url(e[0],e[1])}" data-v="${e[0]}" data-t="${sec(e[1])}" data-ts="${e[1]}" data-title="${esc(e[3])}" target="_blank" rel="noopener">${e[1]}<small>${e[0]}</small></a><div><h3>${esc(e[3])}<span class="chip"><i style="background:${TY[e[2]][1]}"></i>${TY[e[2]][0]}</span></h3>${e[4]?`<p>${esc(e[4])}</p>`:""}${e[5]&&e[5].length?`<div class="parts">For: ${e[5].join(", ")}</div>`:""}${e[6]?`<div class="unc">${esc(e[6])}</div>`:""}</div></div>`).join("");
+return `<section class="band song" id="${s.k}"><div class="wrap"><div class="head"><h2>${esc(s.name)}</h2>${s.tag?`<span class="sub" style="margin:0">${esc(s.tag)}</span>`:""}</div><div class="vids">${vids}</div>${evs||'<p class="sub">No captions on YouTube yet, so this one isn\'t logged. Use the link above to watch.</p>'}</div></section>`}).join("");
+let P=null,cur=null;
+window.onYouTubeIframeAPIReady=()=>{P=new YT.Player("yt",{videoId:V[Object.keys(V).find(k=>!V[k].none)||Object.keys(V)[0]].id,playerVars:{rel:0,modestbranding:1,playsinline:1}})};
+const tag=document.createElement("script");tag.src="https://www.youtube.com/iframe_api";document.head.appendChild(tag);
+const songOf=k=>S.find(s=>s.k==V[k].song)?.name||"";
+document.addEventListener("click",ev=>{const a=ev.target.closest("a[data-v]");if(!a||!P||!P.loadVideoById)return;ev.preventDefault();
+const k=a.dataset.v,t=+a.dataset.t||0,id=V[k].id;
+if(cur==id&&P.seekTo){P.seekTo(t,true);P.playVideo()}else{P.loadVideoById({videoId:id,startSeconds:t});cur=id}
+document.querySelectorAll(".playing").forEach(e=>e.classList.remove("playing"));a.classList.add("playing");
+const ttl=a.dataset.title||"";document.getElementById("now").innerHTML="<b>"+esc(songOf(k))+"</b> · "+k+" · "+a.dataset.ts+(ttl?"<br>"+esc(ttl):"");
+if(matchMedia("(max-width:1000px)").matches)document.querySelector(".player").scrollIntoView({block:"start",behavior:"smooth"});});
+}
+</script>
+</body>
+</html>
